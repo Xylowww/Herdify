@@ -1,5 +1,6 @@
 import { MapPin, Scale, Eye, MessageSquare, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
+import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { StatusBadge } from "./StatusBadge";
 function ListingCard({ listing, compact = false }) {
   const formatPrice = (n) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }).format(n);
@@ -9,9 +10,10 @@ function ListingCard({ listing, compact = false }) {
     /* Image */
   }
         <div className="relative overflow-hidden" style={{ height: compact ? 160 : 210 }}>
-          <img
+          <ImageWithFallback
     src={listing.photo}
     alt={listing.title}
+    loading="lazy"
     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
   />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
@@ -40,7 +42,7 @@ function ListingCard({ listing, compact = false }) {
         {
     /* Body */
   }
-        <div className="p-4 flex-1 flex flex-col bg-gradient-to-b from-white to-[#FAFAF8]">
+        <div className="min-w-0 p-4 flex-1 flex flex-col bg-gradient-to-b from-white to-[#FAFAF8]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] px-2.5 py-1 rounded-full bg-gradient-to-r from-[#F0F7F2] to-[#E8F2EA] text-[#2F6B3F] border border-[#C8E0CF]/60 shadow-sm" style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
               {listing.type}

@@ -6,7 +6,19 @@ function FilterPanel() {
   const { filters, setFilter, resetFilters } = useAppStore();
   const [expanded, setExpanded] = useState(false);
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
-  return <div className="bg-white rounded-2xl border border-[#E2DDD5] p-4 space-y-4">
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+  return <div className="glass-card rounded-[28px] p-4 sm:p-5 space-y-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[#1F2937]" style={{ fontWeight: 700 }}>Refine Results</p>
+          <p className="text-xs text-[#7A8598] mt-1">
+            {activeFilterCount > 0 ? `${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""} active` : "Search by type, status, price, and location"}
+          </p>
+        </div>
+        <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-2xl bg-[#F0F7F2] px-3 text-xs text-[#2F6B3F]" style={{ fontWeight: 700 }}>
+          {activeFilterCount}
+        </span>
+      </div>
       {
     /* Search */
   }
@@ -114,7 +126,7 @@ function FilterPanel() {
   }
       {hasActiveFilters && <button
     onClick={resetFilters}
-    className="flex items-center gap-1.5 text-xs text-[#D64545] hover:text-[#b83838] transition-colors duration-150 active:scale-95"
+    className="flex items-center gap-1.5 text-xs text-[#D64545] hover:text-[#b83838] transition-colors duration-150 active:scale-95 pt-1"
   >
           <X size={12} />
           Clear all filters

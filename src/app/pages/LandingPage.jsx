@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { motion, useScroll, useTransform, useInView, useSpring } from "motion/react";
+import { motion, useScroll, useTransform, useInView } from "motion/react";
+import Lenis from "lenis";
 import {
   MapPin,
   Search,
@@ -46,12 +47,65 @@ const steps = [
   { step: "03", title: "Inquire & Negotiate", desc: "Send inquiries, negotiate price, and schedule farm visits securely.", icon: MessageSquare },
   { step: "04", title: "Complete Trade", desc: "Finalize the deal, mark as sold, and track your transaction history.", icon: Handshake }
 ];
+const getStepParallaxOffsets = (viewportWidth) => {
+  if (viewportWidth >= 1280) {
+    return [
+      { x: 360, y: 112, rotate: 0, zIndex: 1 },
+      { x: 120, y: 30, rotate: 0, zIndex: 2 },
+      { x: -120, y: -30, rotate: 0, zIndex: 3 },
+      { x: -360, y: -112, rotate: 0, zIndex: 4 }
+    ];
+  }
+  if (viewportWidth >= 1024) {
+    return [
+      { x: 260, y: 96, rotate: 0, zIndex: 1 },
+      { x: 84, y: 28, rotate: 0, zIndex: 2 },
+      { x: -84, y: -28, rotate: 0, zIndex: 3 },
+      { x: -260, y: -96, rotate: 0, zIndex: 4 }
+    ];
+  }
+  if (viewportWidth >= 640) {
+    return [
+      { x: 140, y: 92, rotate: 0, zIndex: 1 },
+      { x: -140, y: 92, rotate: 0, zIndex: 2 },
+      { x: 140, y: -92, rotate: 0, zIndex: 3 },
+      { x: -140, y: -92, rotate: 0, zIndex: 4 }
+    ];
+  }
+  return [
+    { x: 0, y: 168, rotate: 0, zIndex: 1 },
+    { x: 30, y: 54, rotate: 0, zIndex: 2 },
+    { x: -30, y: -54, rotate: 0, zIndex: 3 },
+    { x: 0, y: -168, rotate: 0, zIndex: 4 }
+  ];
+};
+function StepParallaxCard({ step, focus, offset }) {
+  const x = useTransform(focus, [0, 1], [offset.x, 0]);
+  const y = useTransform(focus, [0, 1], [offset.y, 0]);
+  const rotate = useTransform(focus, [0, 1], [offset.rotate, 0]);
+  const scale = useTransform(focus, [0, 0.35, 1], [0.84, 0.92, 1]);
+  const opacity = useTransform(focus, [0, 0.24, 1], [0.28, 0.62, 1]);
+  return <motion.div
+    className="relative transform-gpu will-change-transform card-glass card-no-hover p-8 text-center"
+    style={{ x, y, rotate, scale, opacity, zIndex: offset.zIndex }}
+  >
+      <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-4 py-1.5 bg-gradient-to-r from-[#2F6B3F] to-[#3a834d] text-white rounded-full" style={{ fontWeight: 700 }}>
+        Step {step.step}
+      </span>
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F0F7F2] to-[#E8F2EA] flex items-center justify-center mx-auto mb-5 mt-3">
+        <step.icon size={26} className="text-[#2F6B3F]" />
+      </div>
+      <h4 className="text-[#1F2937] mb-3" style={{ fontWeight: 700, fontSize: "1.1rem" }}>{step.title}</h4>
+      <p className="text-[#6B7280]" style={{ lineHeight: 1.6 }}>{step.desc}</p>
+    </motion.div>;
+}
 function LandingPage() {
   const heroRef = useRef(null);
   const featuresRef = useRef(null);
   const stepsRef = useRef(null);
   const testimonialsRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(1280);
   const featuresInView = useInView(featuresRef, { margin: "-100px" });
   const stepsInView = useInView(stepsRef, { margin: "-100px" });
   const testimonialsInView = useInView(testimonialsRef, { margin: "-100px" });
@@ -60,45 +114,55 @@ function LandingPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  useEffect(() => {
+    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
+  useEffect(() => {
+    const lenis = new Lenis({
+      lerp: 0.085,
+      smoothWheel: true,
+      syncTouch: true,
+      syncTouchLerp: 0.08,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1,
+      autoResize: true
+    });
+    let frameId = 0;
+    const raf = (time) => {
+      lenis.raf(time);
+      frameId = window.requestAnimationFrame(raf);
+    };
+    frameId = window.requestAnimationFrame(raf);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      lenis.destroy();
+    };
+  }, []);
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"]
   });
-  const { scrollY } = useScroll();
-  const smoothHeroProgress = useSpring(heroProgress, {
-    stiffness: 90,
-    damping: 24,
-    mass: 0.2
+  const { scrollYProgress: stepsProgress } = useScroll({
+    target: stepsRef,
+    offset: ["start end", "end start"]
   });
-  const smoothScrollY = useSpring(scrollY, {
-    stiffness: 90,
-    damping: 24,
-    mass: 0.2
-  });
-  const heroImageY = useTransform(smoothHeroProgress, [0, 1], [0, 120]);
-  const heroOverlayY = useTransform(smoothHeroProgress, [0, 1], [0, -48]);
-  const heroOverlayScale = useTransform(smoothHeroProgress, [0, 1], [1, 1.12]);
-  const heroContentY = useTransform(smoothHeroProgress, [0, 1], [0, 72]);
-  const heroOpacity = useTransform(smoothHeroProgress, [0, 0.55], [1, 0]);
-  const fixedOrbLeftY = useTransform(smoothScrollY, [0, 1600], [0, -140]);
-  const fixedOrbLeftX = useTransform(smoothScrollY, [0, 1600], [0, 42]);
-  const fixedOrbRightY = useTransform(smoothScrollY, [0, 1600], [0, 180]);
-  const fixedOrbRightX = useTransform(smoothScrollY, [0, 1600], [0, -36]);
-  const fixedOrbBottomY = useTransform(smoothScrollY, [0, 1600], [0, -110]);
+  const heroImageY = useTransform(heroProgress, [0, 1], [0, 84]);
+  const heroOverlayY = useTransform(heroProgress, [0, 1], [0, -24]);
+  const heroOverlayScale = useTransform(heroProgress, [0, 1], [1, 1.06]);
+  const heroContentY = useTransform(heroProgress, [0, 1], [0, 20]);
+  const heroOpacity = useTransform(heroProgress, [0, 0.72], [1, 0.3]);
+  const stepsFocus = useTransform(stepsProgress, [0, 0.14, 0.3, 0.7, 0.86, 1], [0, 0.18, 1, 1, 0.18, 0]);
+  const stepsCoreScale = useTransform(stepsFocus, [0, 1], [0.92, 1.02]);
+  const stepsCoreOpacity = useTransform(stepsFocus, [0, 1], [0.5, 0.08]);
+  const stepParallaxOffsets = getStepParallaxOffsets(viewportWidth);
   return <div className="relative min-h-screen bg-[#F6F4EE] overflow-x-hidden" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <motion.div
-    className="absolute left-[-8rem] top-[12vh] hidden h-80 w-80 rounded-full bg-[#6FAF5F]/12 blur-3xl md:block"
-    style={{ x: fixedOrbLeftX, y: fixedOrbLeftY }}
-  />
-        <motion.div
-    className="absolute right-[-10rem] top-[38vh] hidden h-[26rem] w-[26rem] rounded-full bg-[#C68A3A]/10 blur-3xl md:block"
-    style={{ x: fixedOrbRightX, y: fixedOrbRightY }}
-  />
-        <motion.div
-    className="absolute bottom-[-10rem] left-[18%] hidden h-72 w-72 rounded-full bg-[#2F6B3F]/8 blur-3xl lg:block"
-    style={{ y: fixedOrbBottomY }}
-  />
+        <div className="absolute left-[-8rem] top-[12vh] hidden h-80 w-80 rounded-full bg-[#6FAF5F]/12 blur-3xl md:block" />
+        <div className="absolute right-[-10rem] top-[38vh] hidden h-[26rem] w-[26rem] rounded-full bg-[#C68A3A]/10 blur-3xl md:block" />
+        <div className="absolute bottom-[-10rem] left-[18%] hidden h-72 w-72 rounded-full bg-[#2F6B3F]/8 blur-3xl lg:block" />
         <div className="absolute inset-y-0 left-6 hidden w-px bg-gradient-to-b from-transparent via-[#2F6B3F]/12 to-transparent xl:block" />
         <div className="absolute inset-y-0 right-6 hidden w-px bg-gradient-to-b from-transparent via-[#C68A3A]/12 to-transparent xl:block" />
       </div>
@@ -192,23 +256,23 @@ function LandingPage() {
   }
       <section ref={heroRef} className="relative h-screen min-h-[700px] overflow-hidden">
         <motion.div
-    className="absolute inset-[-5%] will-change-transform"
+    className="absolute inset-[-5%] transform-gpu will-change-transform"
     style={{ y: heroImageY }}
   >
           <img src={HERO_IMG} alt="" className="w-full h-full object-cover" />
         </motion.div>
         <motion.div
-    className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(111,175,95,0.24),transparent_40%),radial-gradient(circle_at_bottom,_rgba(198,138,58,0.14),transparent_32%)]"
+    className="absolute inset-0 transform-gpu will-change-transform bg-[radial-gradient(circle_at_top,_rgba(111,175,95,0.24),transparent_40%),radial-gradient(circle_at_bottom,_rgba(198,138,58,0.14),transparent_32%)]"
     style={{ y: heroOverlayY, scale: heroOverlayScale }}
   />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1910]/90 via-[#1a3d22]/75 to-[#2F6B3F]/60" />
         <motion.div
-    className="absolute left-1/2 top-[18%] h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-3xl"
+    className="absolute left-1/2 top-[18%] h-64 w-64 -translate-x-1/2 transform-gpu will-change-transform rounded-full bg-white/10 blur-3xl"
     style={{ y: heroOverlayY }}
   />
 
         <motion.div
-    className="relative h-full flex flex-col items-center justify-center text-center px-4 sm:px-6"
+    className="relative h-full transform-gpu will-change-transform flex flex-col items-center justify-center text-center px-4 sm:px-6"
     style={{ opacity: heroOpacity, y: heroContentY }}
   >
           <div className="max-w-3xl mx-auto">
@@ -329,24 +393,20 @@ function LandingPage() {
             <p className="text-[#6B7280] text-lg">Get started in 4 simple steps</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((s, i) => <motion.div
-    key={s.step}
-    className="relative card-glass card-no-hover p-8 text-center"
-    custom={i}
-    variants={cardVariants}
-    initial="hidden"
-    animate={stepsInView ? "visible" : "hidden"}
-  >
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-4 py-1.5 bg-gradient-to-r from-[#2F6B3F] to-[#3a834d] text-white rounded-full" style={{ fontWeight: 700 }}>
-                  Step {s.step}
-                </span>
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F0F7F2] to-[#E8F2EA] flex items-center justify-center mx-auto mb-5 mt-3">
-                  <s.icon size={26} className="text-[#2F6B3F]" />
-                </div>
-                <h4 className="text-[#1F2937] mb-3" style={{ fontWeight: 700, fontSize: "1.1rem" }}>{s.title}</h4>
-                <p className="text-[#6B7280]" style={{ lineHeight: 1.6 }}>{s.desc}</p>
-              </motion.div>)}
+          <div className="relative">
+            <motion.div
+    aria-hidden="true"
+    className="pointer-events-none absolute left-1/2 top-1/2 hidden h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(47,107,63,0.12),_rgba(47,107,63,0.04)_42%,_transparent_72%)] blur-2xl md:block"
+    style={{ scale: stepsCoreScale, opacity: stepsCoreOpacity }}
+  />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {steps.map((step, i) => <StepParallaxCard
+    key={step.step}
+    step={step}
+    focus={stepsFocus}
+    offset={stepParallaxOffsets[i]}
+  />)}
+            </div>
           </div>
         </div>
       </section>

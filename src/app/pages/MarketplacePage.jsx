@@ -9,6 +9,7 @@ import { ListingsMap } from "../components/ui/ListingsMap";
 function MarketplacePage() {
   const { filters, mapView, setMapView } = useAppStore();
   const [selectedId, setSelectedId] = useState();
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
   const filtered = useMemo(() => {
     return mockListings.filter((l) => {
       if (filters.type && l.type !== filters.type) return false;
@@ -27,49 +28,64 @@ function MarketplacePage() {
       {
     /* Page Header with gradient banner */
   }
-      <div className="page-banner rounded-2xl p-6 sm:p-8 mb-6 shadow-elevated">
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-white mb-1 drop-shadow-sm" style={{ fontWeight: 800, fontSize: "1.5rem" }}>Livestock Marketplace</h1>
-            <p className="text-white/70 text-sm">
-              <span className="text-white" style={{ fontWeight: 700 }}>{filtered.length}</span> listing{filtered.length !== 1 ? "s" : ""} available near you
+      <div className="page-banner rounded-[30px] p-6 sm:p-8 mb-8 shadow-elevated">
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.12em] text-white/90 backdrop-blur-md" style={{ fontWeight: 700 }}>
+              Live Marketplace
+            </span>
+            <h1 className="mt-4 text-white drop-shadow-sm" style={{ fontWeight: 800, fontSize: "clamp(1.65rem, 4vw, 2.5rem)", lineHeight: 1.05 }}>
+              Find quality livestock from verified sellers near you
+            </h1>
+            <p className="mt-3 max-w-xl text-sm text-white/78 sm:text-[15px]" style={{ lineHeight: 1.7 }}>
+              Browse trusted cattle, goats, poultry, and more with location-aware discovery, privacy-safe inquiries, and transparent pricing.
             </p>
-            <div className="flex items-center gap-4 mt-3">
+            <div className="mt-5 flex flex-wrap gap-2.5">
               {[
     { icon: ShieldCheck, text: "Verified Sellers" },
     { icon: MapPin, text: "Location Privacy" },
     { icon: TrendingUp, text: "Price Transparency" }
-  ].map((item) => <span key={item.text} className="hidden md:flex items-center gap-1.5 text-white/70 text-xs">
+  ].map((item) => <span key={item.text} className="inline-flex items-center gap-1.5 rounded-full border border-white/14 bg-white/10 px-3 py-1.5 text-xs text-white/88 backdrop-blur-md">
                   <item.icon size={12} />
                   {item.text}
                 </span>)}
             </div>
           </div>
-          {
-    /* View Toggle */
-  }
-          <div className="flex items-center gap-1 glass p-1 rounded-xl shadow-soft">
-            <button
+
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <div className="rounded-2xl border border-white/16 bg-white/12 p-1.5 backdrop-blur-md shadow-soft">
+              <div className="flex items-center gap-1">
+                <button
     onClick={() => setMapView(false)}
-    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-300 active:scale-95 ${!mapView ? "bg-gradient-to-r from-[#2F6B3F] to-[#3a834d] text-white shadow-glow" : "text-white/80 hover:text-[#2F6B3F] hover:bg-white/50"}`}
-    style={{ fontWeight: 600 }}
+    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm transition-all duration-300 active:scale-95 ${!mapView ? "bg-white text-[#214f30] shadow-soft" : "text-white/78 hover:text-white hover:bg-white/10"}`}
+    style={{ fontWeight: 700 }}
   >
-              <LayoutGrid size={14} />
-              <span className="hidden sm:inline">Grid</span>
-            </button>
-            <button
+                  <LayoutGrid size={14} />
+                  <span>Grid</span>
+                </button>
+                <button
     onClick={() => setMapView(true)}
-    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-300 active:scale-95 ${mapView ? "bg-gradient-to-r from-[#2F6B3F] to-[#3a834d] text-white shadow-glow" : "text-white/80 hover:text-[#2F6B3F] hover:bg-white/50"}`}
-    style={{ fontWeight: 600 }}
+    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm transition-all duration-300 active:scale-95 ${mapView ? "bg-white text-[#214f30] shadow-soft" : "text-white/78 hover:text-white hover:bg-white/10"}`}
+    style={{ fontWeight: 700 }}
   >
-              <Map size={14} />
-              <span className="hidden sm:inline">Map</span>
-            </button>
+                  <Map size={14} />
+                  <span>Map</span>
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full border border-white/16 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-md" style={{ fontWeight: 700 }}>
+                {filtered.length} listing{filtered.length !== 1 ? "s" : ""} available
+              </span>
+              <span className="inline-flex items-center rounded-full border border-white/16 bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur-md" style={{ fontWeight: 700 }}>
+                {activeFilterCount} active filter{activeFilterCount !== 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row items-start gap-6">
         {
     /* Filter Sidebar */
   }

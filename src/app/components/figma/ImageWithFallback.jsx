@@ -1,5 +1,4 @@
 import { useState } from "react";
-const ERROR_IMG_SRC = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODgiIGhlaWdodD0iODgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIzLjciPjxyZWN0IHg9IjE2IiB5PSIxNiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiByeD0iNiIvPjxwYXRoIGQ9Im0xNiA1OCAxNi0xOCAzMiAzMiIvPjxjaXJjbGUgY3g9IjUzIiBjeT0iMzUiIHI9IjciLz48L3N2Zz4KCg==";
 function ImageWithFallback(props) {
   const [didError, setDidError] = useState(false);
   const handleError = () => {
@@ -7,11 +6,21 @@ function ImageWithFallback(props) {
   };
   const { src, alt, style, className, ...rest } = props;
   return didError ? <div
-    className={`inline-block bg-gray-100 text-center align-middle ${className ?? ""}`}
+    className={`relative inline-block overflow-hidden text-center align-middle bg-[linear-gradient(135deg,#f6f3eb_0%,#eef6f0_100%)] ${className ?? ""}`}
     style={style}
   >
-      <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} data-original-url={src} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(111,175,95,0.22),transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(198,138,58,0.16),transparent_28%)]" />
+      <div className="relative flex h-full w-full flex-col items-center justify-center px-4 text-center">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/75 shadow-soft">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F6B3F" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="14" rx="2" />
+            <path d="m7 13 3-3 3 3 4-4 2 2" />
+            <path d="M8 8h.01" />
+          </svg>
+        </div>
+        <p className="max-w-[12rem] text-xs text-[#2F6B3F]" style={{ fontWeight: 700 }}>
+          {alt || "Image unavailable"}
+        </p>
       </div>
     </div> : <img src={src} alt={alt} className={className} style={style} {...rest} onError={handleError} />;
 }
