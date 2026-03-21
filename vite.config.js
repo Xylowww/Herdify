@@ -16,6 +16,12 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url))
     }
   },
+  server: {
+    host: "0.0.0.0"
+  },
+  preview: {
+    host: "0.0.0.0"
+  },
   // File types to support raw imports. Never add .css, .jsx, or .js files to this.
   assetsInclude: ["**/*.svg", "**/*.csv"]
 });
